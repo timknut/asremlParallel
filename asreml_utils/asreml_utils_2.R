@@ -107,21 +107,25 @@ parse_results <- function(x, multicore = FALSE){
 
 #' Format genotypes data frame.
 #'
-#' Format genotypes data frame. Make genosubset if fraction = TRUE
+#' Format genotypes data frame. Make random subset of markers if fraction = TRUE.
+#' Find common pheno/geno animals.
 #' @param x plink raw format data frame.
-#' @param fraction Locical. Will pick a random fraction of markes for testing if TRUE. Default [FALSE]
+#' @param fraction Locical. Will pick a random fraction of markes for
+#' testing if TRUE. Default [FALSE]
 #' @keywords asreml gwas
 #' @export
-##
-genosubset <- function(x, fraction = FALSE, multicore = TRUE) {
-	ifelse(multicore == TRUE, animals_geno <- select(x, 1),
-			 animals_geno <- select(x, 2))
+subset_common <- function(x, fraction = FALSE) {
+
+	animals_geno <- dplyr::select(x, 2)
 	## find common samples
-	index_common_animals <- match(intersect(pheno$animal, animals_geno$IID), animals_geno$IID)
+	index_common_animals <-
+	  match(intersect(pheno$animal, animals_geno$IID), animals_geno$IID)
+	message(sprintf(
+	  "found %i animals in common between geno and phenofile",
+	  dplyr::n_distinct(index_common_animals)
+	))
 	## make genosubset with common animals. omit all but animal column
-	ifelse(multicore == TRUE,
-			 geno_subset <- x[index_common_animals,],
-			 geno_subset <- x[index_common_animals,] %>% select(2,7:ncol(x)))
+	geno_subset <- x[index_common_animals,] %>% select(2,7:ncol(x))
 	if (fraction == TRUE){
 		rand_markers <- sample_frac(data_frame(markers = seq(2, ncol(geno_subset))), 0.1)
 		x <- select(geno_subset, 1, as.integer(rand_markers$markers))
@@ -155,31 +159,41 @@ get_logL <- function(x){
 	dplyr::mutate(snp_count, LogL = logl, SNP = SNP)
 }
 
-#' function to split and run gwas files.
+#' split and run gwas files on cluster.
 #'
-#' Get LogL score from asreml .asr file random snp run.
-#' @param run run name as integer.
+#' @param run integer Run number.
+#' @param runs list Character list of SNPs to run.
+#' @param jobname string. Name of job
+#' @param phenofile string. Phenotype file
 #' @keywords asreml gwas
 #' @export
-split_n_run <- function(run){
-	run_name  <- names(runs[run])
+split_n_run <- function(run, runs, jobname, phenofile, pedigree){
+	require(RLinuxModules)
+  moduleInit()
+  module("load slurm")
+  run_name  <- names(runs[run])
 	dir.create(sprintf("runfolder/%s", run_name))
-	index <- match(runs[[run]], names(geno))
+	snp_index <- match(runs[[run]], names(geno))
 	# subset markers for this run
-	geno_run <- select(geno, 1, index)
-	write.table(geno_run, sprintf("runfolder/%s/%s_genos.txt", run_name, run_name),
-					quote = F, sep = "\t", col.names = T, row.names = FALSE)
+	geno_run <- dplyr::select(geno, 1, snp_index)
+	readr::write_tsv(
+	  geno_run,
+	  path = sprintf("runfolder/%s/%s_genos.txt", run_name, run_name),
+	  col_names = TRUE
+	)
 
 	if(!file.exists("slurm")) dir.create("slurm")
 	## Make script below to work
 	cat ("#!/bin/sh",
 		  "#SBATCH -n 1",
 		  "#SBATCH -N 1",
+		  sprintf("#SBATCH -J asreml_%i", run),
 		  "#SBATCH --output=slurm/job%j.log",
-		  "/local/genome/packages/R/3.1.0/bin/Rscript ../parallel_support_script.R $1 $2 $3",
+		  "/local/genome/packages/R/3.2.3/bin/Rscript \\
+		  /mnt/users/tikn/Projects/R-packages/asremlParallel/asreml_parallel/parallel_support_script.R $1 $2 $3 $4",
 		  file = sprintf("slurm/parallel_%s.sh", run_name), sep = "\n"
 	)
-	system(command = sprintf("sbatch slurm/parallel_%s.sh %s %s %s",run_name, run_name, trait, phenofile))
+	system(command = sprintf("sbatch slurm/parallel_%s.sh %s %s %s %s",run_name, run, jobname, phenofile, pedigree))
 }
 
 split_n_run_multi <- function(run){
@@ -201,4 +215,16 @@ split_n_run_multi <- function(run){
 		  file = sprintf("slurm/parallel_%s.sh", run_name), sep = "\n"
 	)
 	system(command = sprintf("sbatch slurm/parallel_%s.sh %s %s %s",run_name, run_name, trait, phenofile))
+}
+
+#' Split genotype data-fra into n_jobs pieces.
+#'
+#' @param snplist character vector of SNP-names.
+#' @param n_jobs N jobs to split the job over.
+#' @export
+job_setup <- function(snplist, n_jobs){
+  dir.create("runfolder") ## conside making temp folder for this.
+  runs <- dplyr::data_frame(marker = snplist[2:length(snplist)])
+  runs <- dplyr::mutate(runs, run = paste("run", ntile(seq_along(marker), n_jobs), sep = "_"))
+  split(runs$marker, runs$run)
 }
