@@ -1,8 +1,9 @@
 ## Run arseml in parallel for n number of jobs for a given jobname.
 
 #### NB!!! ####################################
-# Set wd to analysis folder with scripts      #
+# Set working dir to analysis folder          #
 ###############################################
+
 setwd("~/Projects/R-packages/asremlParallel/tests/")
 
 ## phenofile format.
@@ -10,19 +11,17 @@ setwd("~/Projects/R-packages/asremlParallel/tests/")
 # 1810    0.4201330846    593.5648206     3865    3865
 # 1893    0.1953620621    593.9099203     8320    8319
 
-
 # Set parameters ----------------------------------------------------------
-n_jobs = 2
+n_jobs = 4
 jobname = "C14"
 phenofile <- "~tikn/Projects/R-packages/asremlParallel/data/testdata/AM_FA_dyd_asreml_20_daughters.txt"
 genofile <- "~tikn/Projects/R-packages/asremlParallel/data/testdata/fa_subset_final_march2016_updateids_updateparents_me_removed_tenperc_chr1_bp1_bp200000.raw" ## plink --recode A format
 pedigree <- "/mnt/users/tikn/Projects/R-packages/asremlParallel/data/testdata/pedigree/fa_20_daughters_Pedigree_asreml.txt.SRT"
-delim = " "
-#col_names <- FALSE
+# delim = " "
+
 # No change required below ------------------------------------------------
 
 # setup packages, data and functions ---------------------------------------------
-# source("~tikn/Projects/R-packages/asremlParallel/R/asreml_utils_2.R")
 suppressPackageStartupMessages(require(plyr))
 suppressPackageStartupMessages(require(data.table))
 suppressPackageStartupMessages(require(stringr))
