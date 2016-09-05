@@ -4,7 +4,6 @@
 #' @param name Dummy variable.
 #' @keywords asreml
 #' @export
-#
 readANOVAASREML <- function(name)
 {
 	ss <- readLines(paste(SNP,".asr",sep = ""))
@@ -24,6 +23,13 @@ readANOVAASREML <- function(name)
 	return(ANOVA)
 }
 
+#' Process asreml ANOVA output
+#'
+#' function for process the ANOVA in multi-core setting
+#' @param run integer. Run number.
+#' @param SNP Character. SNP identifier.
+#' @keywords GWAS
+#' @export
 readANOVAASREML_multicore <- function(run, SNP)
 {
 	ss <- readLines(sprintf("temp_%s/%s.asr",run, SNP))
@@ -125,7 +131,8 @@ subset_common <- function(x, fraction = FALSE) {
 	  dplyr::n_distinct(index_common_animals)
 	))
 	## make genosubset with common animals. omit all but animal column
-	geno_subset <- x[index_common_animals,] %>% select(2,7:ncol(x))
+	geno_subset <- x[index_common_animals,]
+	geno_subset <- dplyr::select(geno_subset, 2,7:ncol(x))
 	if (fraction == TRUE){
 		rand_markers <- sample_frac(data_frame(markers = seq(2, ncol(geno_subset))), 0.1)
 		x <- select(geno_subset, 1, as.integer(rand_markers$markers))
@@ -148,7 +155,7 @@ subset_common <- function(x, fraction = FALSE) {
 get_logL <- function(x){
 	asr <- readLines(paste(x, ".asr", sep = ""))
 	asr <- unlist(stringr::str_extract_all(asr, "LogL=-\\d+\\.\\d+"))
-	logl <- unlist(stringr::str_split(asr, "=")[length(asr)])[2] %>% as.numeric
+	logl <- as.numeric(unlist(stringr::str_split(asr, "=")[length(asr)])[2])
 	snp_count <- data.frame(t(count(data_loop, snp)))
 	name_table <- c("X1" = "AA", "X2" = "AB", "X3" = "BB") # make translation vector for columns
 	if (length(snp_count) != 3) {
@@ -168,9 +175,9 @@ get_logL <- function(x){
 #' @keywords asreml gwas
 #' @export
 split_n_run <- function(run, runs, jobname, phenofile, pedigree){
-	require(RLinuxModules)
-  moduleInit()
-  module("load slurm")
+# 	require(RLinuxModules) # move these three lines main script.
+#   moduleInit()
+#   module("load slurm")
   run_name  <- names(runs[run])
 	dir.create(sprintf("runfolder/%s", run_name))
 	snp_index <- match(runs[[run]], names(geno))
@@ -190,7 +197,7 @@ split_n_run <- function(run, runs, jobname, phenofile, pedigree){
 		  sprintf("#SBATCH -J asreml_%i", run),
 		  "#SBATCH --output=slurm/job%j.log",
 		  "/local/genome/packages/R/3.2.3/bin/Rscript \\
-		  /mnt/users/tikn/Projects/R-packages/asremlParallel/asreml_parallel/parallel_support_script.R $1 $2 $3 $4",
+		  /mnt/users/tikn/Projects/R-packages/asremlParallel/helpers/parallel_support_script.R $1 $2 $3 $4",
 		  file = sprintf("slurm/parallel_%s.sh", run_name), sep = "\n"
 	)
 	system(command = sprintf("sbatch slurm/parallel_%s.sh %s %s %s %s",run_name, run, jobname, phenofile, pedigree))
@@ -227,4 +234,17 @@ job_setup <- function(snplist, n_jobs){
   runs <- dplyr::data_frame(marker = snplist[2:length(snplist)])
   runs <- dplyr::mutate(runs, run = paste("run", ntile(seq_along(marker), n_jobs), sep = "_"))
   split(runs$marker, runs$run)
+}
+
+#' Check that jobfolder is in working directory
+#'
+#' @param jobname Character string.
+#' @export
+#'
+dircheck <- function(jobname) {
+  dirs <- list.dirs(recursive = F)
+  dircheck <- unlist(strsplit(dirs, "/"))
+  dircheck <- dircheck[match(jobname, dircheck)]
+  if(!grepl(jobname, dircheck) | is.null(dircheck)){
+    stop("Did you check working directory?") }
 }
