@@ -70,14 +70,15 @@ for (i in 2:ncol(geno)) {
 		 "animal !P",
 		 sprintf("dyd_%s", phenotype),
 		 sprintf("n_%s", phenotype),
-		 "snp",  # SHOULD BE CODED AS 0, 1, and 2
+		 "SNP !D-1",  # SHOULD BE CODED AS 0, 1, and 2. Missing (-1) will be deleted
 		 sprintf("%s !ALPHA !MAKE", pedline),
 		 sprintf("%s !SKIP1 !AISING !MAXIT 20 !EXTRA 5 !FCON !DDF", dataline),
-		 sprintf("dyd_%s !WT n_%s ~ mu snp !r animal",phenotype, phenotype)
+		 sprintf("dyd_%s !WT n_%s ~ mu SNP !r animal",phenotype, phenotype)
 		 ,file = as.file, sep="\n")
 
-  log_asreml <- system(paste("/local/genome/packages/asreml/3.0.22.2-vb/bin/asreml ", as.file),
-                       intern = T)
+#  log_asreml <- system(paste("/local/genome/packages/asreml/3.0.22.2-vb/bin/asreml ", as.file),
+#                       intern = T)
+ system(paste("/local/genome/packages/asreml/3.0.22.2-vb/bin/asreml ", as.file))
 
 	# results  <- parse_results(data_loop, multicore = TRUE)
 	# asr_file <- sprintf("%s/%s", temp_folder, SNP) # use when snp as random regression.

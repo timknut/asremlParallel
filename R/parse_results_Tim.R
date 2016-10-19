@@ -25,7 +25,7 @@ parse_results_Tim <-function(x, multicore = FALSE){
 
 	mat3<-as.data.frame(matrix(t(mat3$V2),1,3))
 	names(mat3)<-c("AA","AB","BB")
-	mat3$Source<-"snp"
+	mat3$Source<-"SNP"
 
 
 	ifelse (multicore == TRUE,
@@ -38,14 +38,14 @@ parse_results_Tim <-function(x, multicore = FALSE){
 
 	est <- data.frame(SNP ,read.table(sprintf("temp_%s/%s.sln",run,SNP),head = FALSE))
 	colnames(est) <- c("name","Source","level","effect","se")
-	terms<-as.matrix(c('snp'))
+	terms<-as.matrix(c('SNP'))
 	colnames(terms)<-'Source'
 	EFFECTS<- merge(terms,est,by='Source')
 
 	# GET P VALUE
 	anova<-NULL
 	effects<-NULL
-	anova<-subset(ANOVA,Source=="snp")
+	anova<-subset(ANOVA,Source=="SNP")
 	anova$pval<- pf(anova$F_con,anova$NumDF,anova$DenDF_con, lower.tail=F)
 	anova<-subset(anova,select=c(Source,pval))
 
@@ -53,7 +53,7 @@ parse_results_Tim <-function(x, multicore = FALSE){
 
 
 	colnames(effects)<-c("effect")
-	effects$Source<-"snp"
+	effects$Source<-"SNP"
 
 	res<-NULL
 	# Tim

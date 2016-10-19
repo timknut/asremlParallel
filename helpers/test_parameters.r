@@ -5,3 +5,6 @@ genofile <- "~tikn/Projects/R-packages/asremlParallel/data/testdata/fa_subset_fi
 pedigree <- "/mnt/users/tikn/Projects/R-packages/asremlParallel/data/testdata/pedigree/fa_20_daughters_Pedigree_asreml.txt.SRT"
 phenotype = jobname
 run_name = "run_1"
+i = 2
+x = data_loop
+multicore = TRUE
