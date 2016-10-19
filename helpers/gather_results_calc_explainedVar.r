@@ -1,5 +1,7 @@
 # gather all results files and plot. --------------------------------------
 
+# WARNING! [1] "Wed Oct 19 13:05:13 2016"
+# Script needs to be updated.
 
 
 # calc explained var ------------------------------------------------------
@@ -22,7 +24,7 @@ headers_bim <- c("CHR", "SNP", "cM", "BP", "A1", "A2")
 bim <- read.delim("~tikn/dmu/DMU-data/plink-runs/777genos.bim", header=FALSE,
 									stringsAsFactors=FALSE, col.names = headers_bim) %>% select(-cM)
 bim <- filter(bim, CHR == 6)
-results <- list.files("runfolder", recursive = TRUE, pattern = "summary_results_run.*.csv",
+results <- list.files("runfolder", recursive = TRUE, pattern = "summary_results_.*.\\csv",
 							 full.names = TRUE)
 summary_results <- ldply(results, function(x) data.table::fread(x, data.table = FALSE))
 names(summary_results) <- c("AA", "AB", "BB", "LogL", "SNP")

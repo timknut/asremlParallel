@@ -36,7 +36,8 @@ names(pheno)[1]<-"animal"
 
 ## select singel phenotype keeping only common geno/pheno animals
 pheno <- semi_join(pheno, select(geno, 1), by = c("animal" = "IID")) %>%
-	select(1,ends_with(phenotype))
+	select(1,ends_with(phenotype), nobs)
+
 
 if(ncol(pheno) > 3){
   stop("more than 3 columns in phenofile")
@@ -69,11 +70,12 @@ for (i in 2:ncol(geno)) {
 		 "GWAS",
 		 "animal !P",
 		 sprintf("dyd_%s", phenotype),
-		 sprintf("n_%s", phenotype),
+		 #sprintf("n_%s", phenotype), # the weightings column name.
+		 sprintf("nobs"),             # weigtings column name
 		 "SNP !D-1",  # SHOULD BE CODED AS 0, 1, and 2. Missing (-1) will be deleted
 		 sprintf("%s !ALPHA !MAKE", pedline),
 		 sprintf("%s !SKIP1 !AISING !MAXIT 20 !EXTRA 5 !FCON !DDF", dataline),
-		 sprintf("dyd_%s !WT n_%s ~ mu SNP !r animal",phenotype, phenotype)
+		 sprintf("dyd_%s !WT nobs ~ mu SNP !r animal",phenotype)
 		 ,file = as.file, sep="\n")
 
 #  log_asreml <- system(paste("/local/genome/packages/asreml/3.0.22.2-vb/bin/asreml ", as.file),
@@ -85,7 +87,7 @@ for (i in 2:ncol(geno)) {
 	results <- parse_results_Tim(data_loop, multicore = TRUE)
 
 	readr::write_csv(results, path = sprintf('summary_results_%s.csv', run), append=TRUE, col_names=FALSE)
-	system(sprintf("rm %s/%s.*", temp_folder, SNP))
+	system(sprintf("rm %s/%s.*", temp_folder, SNP)) # Uncomment to keep temp log-files
 }
 
 # If you restart some anlysis, make sure that you delete the previous
