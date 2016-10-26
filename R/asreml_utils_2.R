@@ -179,7 +179,7 @@ split_n_run <- function(run, runs, jobname, phenofile, pedigree){
 #   moduleInit()
 #   module("load slurm")
   run_name  <- names(runs[run])
-	dir.create(sprintf("runfolder/%s", run_name))
+	dir.create(sprintf("runfolder/%s", run_name), recursive = TRUE)
 	snp_index <- match(runs[[run]], names(geno))
 	# subset markers for this run
 	geno_run <- dplyr::select(geno, 1, snp_index)
@@ -230,7 +230,7 @@ split_n_run_multi <- function(run){
 #' @param n_jobs N jobs to split the job over.
 #' @export
 job_setup <- function(snplist, n_jobs){
-  dir.create("runfolder") ## conside making temp folder for this.
+ # dir.create("runfolder") ## conside making temp folder for this. # obselete
   runs <- dplyr::data_frame(marker = snplist[2:length(snplist)])
   runs <- dplyr::mutate(runs, run = paste("run", ntile(seq_along(marker), n_jobs), sep = "_"))
   split(runs$marker, runs$run)

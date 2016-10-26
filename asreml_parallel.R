@@ -34,8 +34,6 @@ library(asremlParallel)
 dir.create(jobname)
 dircheck(jobname)
 
-
-
 # setwd(jobname) # Should not setwd!
 
 # # READ PHENOTYPIC INFO
