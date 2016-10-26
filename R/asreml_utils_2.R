@@ -122,17 +122,17 @@ parse_results <- function(x, multicore = FALSE){
 #' @export
 subset_common <- function(x, fraction = FALSE) {
 
-	animals_geno <- dplyr::select(x, 2)
+	animals_geno <- dplyr::select(x, 1)
 	## find common samples
 	index_common_animals <-
-	  match(intersect(pheno$animal, animals_geno$IID), animals_geno$IID)
+	  match(intersect(pheno$animal, animals_geno$V1), animals_geno$V1)
 	message(sprintf(
 	  "found %i animals in common between geno and phenofile",
 	  dplyr::n_distinct(index_common_animals)
 	))
 	## make genosubset with common animals. omit all but animal column
 	geno_subset <- x[index_common_animals,]
-	geno_subset <- dplyr::select(geno_subset, 2,7:ncol(x))
+	# geno_subset <- dplyr::select(geno_subset, 2,7:ncol(x)) # If plink raw is read, which is suboptimal.
 	if (fraction == TRUE){
 		rand_markers <- sample_frac(data_frame(markers = seq(2, ncol(geno_subset))), 0.1)
 		x <- select(geno_subset, 1, as.integer(rand_markers$markers))
@@ -247,3 +247,30 @@ dircheck <- function(jobname) {
   if(!grepl(jobname, dircheck) | is.null(dircheck)){
     stop("Did you check working directory?") }
 }
+
+#' Read specified markers into the geno object.
+#'
+#' @param x File name as character string.
+#' @param markers numeric vector of columns to keep.
+#' @export
+read_genotypes <- function(x, markers = NULL) {
+  if (is.null(markers)) {
+    data.table::fread(
+      x,
+      data.table = F,
+      verbose = FALSE,
+      colClasses = list(character = 1),
+      na.strings = "."
+    )
+  } else {
+    data.table::fread(
+      x,
+      data.table = F,
+      select =  markers,
+      verbose = FALSE,
+      colClasses = list(character = 1),
+      na.strings = "."
+    )
+  }
+}
+

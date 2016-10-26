@@ -35,7 +35,7 @@ pheno <- read.table(phenofile, header=TRUE)
 names(pheno)[1]<-"animal"
 
 ## select singel phenotype keeping only common geno/pheno animals
-pheno <- semi_join(pheno, select(geno, 1), by = c("animal" = "IID")) %>%
+pheno <- semi_join(pheno, select(geno, 1), by = c("animal" = "V1")) %>%
 	select(1,ends_with(phenotype), nobs)
 
 
@@ -53,7 +53,7 @@ if (!file.exists(temp_folder)) dir.create(temp_folder) # create runfolder
 
 for (i in 2:ncol(geno)) {
 	SNP <- names_snp[i] # snp[i]
-	marker_matrix <- select(geno, animal = IID, snp = i) # c(1,i)])
+	marker_matrix <- select(geno, animal = V1, snp = i) # c(1,i)])
 	data_loop <- dplyr::inner_join(pheno, marker_matrix, by = "animal")
 	readr::write_delim(data_loop, path = sprintf('%s/data_loop.dat',temp_folder),
 					col_names=TRUE, delim = " ")
