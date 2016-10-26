@@ -230,7 +230,6 @@ split_n_run_multi <- function(run){
 #' @param n_jobs N jobs to split the job over.
 #' @export
 job_setup <- function(snplist, n_jobs){
- # dir.create("runfolder") ## conside making temp folder for this. # obselete
   runs <- dplyr::data_frame(marker = snplist[2:length(snplist)])
   runs <- dplyr::mutate(runs, run = paste("run", ntile(seq_along(marker), n_jobs), sep = "_"))
   split(runs$marker, runs$run)

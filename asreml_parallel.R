@@ -27,14 +27,12 @@ suppressPackageStartupMessages(require(data.table))
 suppressPackageStartupMessages(require(stringr))
 suppressPackageStartupMessages(require(dplyr))
 library(asremlParallel)
-	require(RLinuxModules) # move these three lines main script.
-  moduleInit()
-  module("load slurm")
+library(RLinuxModules) # move these three lines main script.
+moduleInit()
+module("load slurm")
 
 dir.create(jobname)
 dircheck(jobname)
-
-# setwd(jobname) # Should not setwd!
 
 # # READ PHENOTYPIC INFO
 pheno <- data.table::fread(phenofile)
@@ -42,7 +40,7 @@ names(pheno)[1]<-"animal" ## Suboptimal
 
 # READ GENOTYPIC INFO from plink --recode raw A file
 geno <- data.table::fread(genofile, data.table = F, verbose = FALSE)
-names(geno) <- str_replace(names(geno), "_.$", "") ## remove _C or _2 etc from snp name.
+names(geno) <- stringr::str_replace(names(geno), "_.$", "") ## remove _C or _2 etc from snp name.
 
 # format genotypes data frame
 geno <- subset_common(geno) ## Change to just use common animals geno/pheno, and report Diff like gcta

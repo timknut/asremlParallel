@@ -78,9 +78,16 @@ for (i in 2:ncol(geno)) {
 		 sprintf("dyd_%s !WT nobs ~ mu SNP !r animal",phenotype)
 		 ,file = as.file, sep="\n")
 
-#  log_asreml <- system(paste("/local/genome/packages/asreml/3.0.22.2-vb/bin/asreml ", as.file),
-#                       intern = T)
- system(paste("/local/genome/packages/asreml/3.0.22.2-vb/bin/asreml ", as.file))
+
+# Uncomment to keep log. --------------------------------------------------
+		log_asreml <-
+	  system(paste(
+	    "/local/genome/packages/asreml/3.0.22.2-vb/bin/asreml ",
+	    as.file
+	  ),
+	  intern = T)
+#  system(paste("/local/genome/packages/asreml/3.0.22.2-vb/bin/asreml ", as.file))
+# End ---------------------------------------------------------------------
 
 	# results  <- parse_results(data_loop, multicore = TRUE)
 	# asr_file <- sprintf("%s/%s", temp_folder, SNP) # use when snp as random regression.
