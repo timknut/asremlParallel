@@ -9,7 +9,7 @@ parse_results_Tim <-function(x, multicore = FALSE){
 	mat1<-NULL
 	mat2<-NULL
 	mat3<-NULL
-	mat<-as.matrix(table(x$snp))
+	mat<-as.matrix(table(x$SNP))
 	mat1<-matrix(NA,nrow(mat),2)
 	mat1[,1]<-rownames(mat)
 	mat1[,2]<-mat[,1]

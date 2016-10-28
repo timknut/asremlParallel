@@ -2,9 +2,13 @@ Package: asremlParallel
 Type: Package
 Title: R-wrapper for ASReml
 Version: 0.1.0
-Author: Tim Knutsen
-Maintainer: Who to complain to <yourfault@somewhere.net>
+Authors@R: person("Tim", "Knutsen", email = "timknutsen@gmail.com",
+  role = c("aut", "cre"))
+Maintainer: Tim Knutsen <timknutsen@gmail.com>
 Description: More about what it does (maybe more than one line)
-License: What license is it under?
+License: GPL
 LazyData: TRUE
-Imports: dplyr
+Imports: dplyr,
+    data.table,
+    stringr,
+    RLinuxModules

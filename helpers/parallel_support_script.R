@@ -26,8 +26,8 @@ pedigree <- args[4]
 # end ---------------------------------------------------------------------
 
 
-cat(paste0("Run_", run, "\n"))
-genofile <- sprintf("runfolder/run_%s/run_%s_genos.txt", run, run)
+cat(run, "\n")
+genofile <- sprintf("runfolder/%s/%s_genos.txt", run, run)
 geno <- data.table::fread(genofile, verbose = FALSE, data.table = FALSE)
 
 # READ PHENOTYPIC INFO
@@ -35,7 +35,7 @@ pheno <- read.table(phenofile, header=TRUE)
 names(pheno)[1]<-"animal"
 
 ## select singel phenotype keeping only common geno/pheno animals
-pheno <- semi_join(pheno, select(geno, 1), by = c("animal" = "V1")) %>%
+pheno <- semi_join(pheno, select(geno, 1), by = "animal" ) %>%
 	select(1,ends_with(phenotype), nobs)
 
 
@@ -47,54 +47,78 @@ if(ncol(pheno) > 3){
 names_snp=names(geno)
 
 # Singel SNP loop ---------------------------------------------------------
-setwd(sprintf("runfolder/run_%s", run))
+setwd(sprintf("runfolder/%s", run))
 temp_folder <- sprintf("temp_%s", run)
 if (!file.exists(temp_folder)) dir.create(temp_folder) # create runfolder
 
+
 for (i in 2:ncol(geno)) {
-	SNP <- names_snp[i] # snp[i]
-	marker_matrix <- select(geno, animal = V1, snp = i) # c(1,i)])
-	data_loop <- dplyr::inner_join(pheno, marker_matrix, by = "animal")
-	readr::write_delim(data_loop, path = sprintf('%s/data_loop.dat',temp_folder),
-					col_names=TRUE, delim = " ")
-	pedline <- pedigree
-	dataline <- sprintf("%s/runfolder/run_%s/%s/data_loop.dat", work_dir, run, temp_folder)
-	stopifnot(file.exists(dataline))
-	# .as file
-	# need to be adjusted for your own model and parameters included in the as file
-	as.file <- paste(SNP,".as",sep="")
-	as.file <- sprintf("%s/%s", temp_folder, as.file)
-	# fixed: sprintf("%s !SKIP1 !MAXIT 20 !MVINCLUDE !AISING !FCON !DDF", dataline),
-	# random: !AISING !MAXIT 20 !EXTRA 10 !DDF
-	cat("!NODISP !WORKSPACE 2000",
-		 "GWAS",
-		 "animal !P",
-		 sprintf("dyd_%s", phenotype),
-		 #sprintf("n_%s", phenotype), # the weightings column name.
-		 sprintf("nobs"),             # weigtings column name
-		 "SNP !D-1",  # SHOULD BE CODED AS 0, 1, and 2. Missing (-1) will be deleted
-		 sprintf("%s !ALPHA !MAKE", pedline),
-		 sprintf("%s !SKIP1 !AISING !MAXIT 20 !EXTRA 5 !FCON !DDF", dataline),
-		 sprintf("dyd_%s !WT nobs ~ mu SNP !r animal",phenotype)
-		 ,file = as.file, sep="\n")
+  if (i == 2)
+    timer_start <- proc.time() # Simple time left estimator.
+  SNP <- names_snp[i] # snp[i]
+  marker_matrix <- select(geno, animal, SNP = i) # c(1,i)])
+  data_loop <- dplyr::inner_join(pheno, marker_matrix, by = "animal")
+  readr::write_delim(
+    data_loop,
+    path = sprintf('%s/data_loop.dat', temp_folder),
+    col_names = TRUE, delim = " ", na = '-9'
+  )
+  pedline <- pedigree
+  dataline <-  sprintf("%s/runfolder/%s/%s/data_loop.dat",
+            work_dir, run, temp_folder)
+  stopifnot(file.exists(dataline))
+  # .as file
+  # need to be adjusted for your own model and parameters included in the as file
+  as.file <- paste(SNP, ".as", sep = "")
+  as.file <- sprintf("%s/%s", temp_folder, as.file)
+  # fixed: sprintf("%s !SKIP1 !MAXIT 20 !MVINCLUDE !AISING !FCON !DDF", dataline),
+  # random: !AISING !MAXIT 20 !EXTRA 10 !DDF
+  cat(
+    "!NODISP !WORKSPACE 2000",
+    "GWAS",
+    "animal !P",
+    sprintf("dyd_%s", phenotype),
+    #sprintf("n_%s", phenotype), # the weightings column name.
+    sprintf("nobs"),
+    # weigtings column name
+    "SNP !D-9",
+    # SHOULD BE CODED AS 0, 1, and 2. Missing (-9) will be deleted
+    sprintf("%s !ALPHA !MAKE", pedline),
+    sprintf("%s !SKIP1 !AISING !MAXIT 20 !EXTRA 5 !FCON !DDF", dataline),
+    sprintf("dyd_%s !WT nobs ~ mu SNP !r animal", phenotype)
+    ,
+    file = as.file,
+    sep = "\n"
+  )
 
 
-# Uncomment to keep log. --------------------------------------------------
-		log_asreml <-
-	  system(paste(
-	    "/local/genome/packages/asreml/3.0.22.2-vb/bin/asreml ",
-	    as.file
-	  ),
-	  intern = T)
-#  system(paste("/local/genome/packages/asreml/3.0.22.2-vb/bin/asreml ", as.file))
-# End ---------------------------------------------------------------------
+  # Uncomment to keep log. --------------------------------------------------
+  log_asreml <-
+    system(
+      paste(
+        "/local/genome/packages/asreml/3.0.22.2-vb/bin/asreml ",
+        as.file
+      ),
+      intern = T
+    )
+ # system(paste("/local/genome/packages/asreml/3.0.22.2-vb/bin/asreml ", as.file))
+  # End ---------------------------------------------------------------------
 
-	# results  <- parse_results(data_loop, multicore = TRUE)
-	# asr_file <- sprintf("%s/%s", temp_folder, SNP) # use when snp as random regression.
-	results <- parse_results_Tim(data_loop, multicore = TRUE)
+  # results  <- parse_results(data_loop, multicore = TRUE)
+  # asr_file <- sprintf("%s/%s", temp_folder, SNP) # use when snp as random regression.
+  results <- parse_results_Tim(data_loop, multicore = TRUE)
 
-	readr::write_csv(results, path = sprintf('summary_results_%s.csv', run), append=TRUE, col_names=FALSE)
-	system(sprintf("rm %s/%s.*", temp_folder, SNP)) # Uncomment to keep temp log-files
+  readr::write_csv(
+    results,
+    path = sprintf('summary_results_%s.csv', run),
+    append = TRUE, col_names = FALSE
+  )
+  # cat(log_asreml, file = sprintf('%s.log', SNP), sep = '\n')  # uncomment to write separate logs for each variant.
+  system(sprintf("rm %s/%s.*", temp_folder, SNP)) # Uncomment to keep temp log-files
+  if (i == 2) {
+    timer_end <- proc.time() - timer_start
+    cat(paste0((timer_end[3] * length(names_snp))/60, " minutes estimated left."), sep = "\n")
+  }
 }
 
 # If you restart some anlysis, make sure that you delete the previous

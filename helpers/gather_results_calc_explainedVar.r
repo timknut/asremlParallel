@@ -16,7 +16,9 @@ mutate(summary_results,
 		 of_phenovar_explained = explained_eff/tot_var,
 		 of_genovar_explained = explained_eff/gen_var) %>% arrange(pval) %>% head
 
+# end ---------------------------------------------------------------------
 
+mapfile <- "/mnt/users/tikn/Projects/Fatty_acids_bovine/GWAS/new_GWAS_mars_2016/genotypes/seqimputed/vcf/final_seqimputed_merged/dosage_format/Chr13_map_info.txt"
 
 ## Make manhattan from parallel run.
 headers_bim <- c("CHR", "SNP", "cM", "BP", "A1", "A2")

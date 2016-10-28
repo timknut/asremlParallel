@@ -125,7 +125,7 @@ subset_common <- function(x, fraction = FALSE) {
 	animals_geno <- dplyr::select(x, 1)
 	## find common samples
 	index_common_animals <-
-	  match(intersect(pheno$animal, animals_geno$V1), animals_geno$V1)
+	  match(intersect(pheno$animal, animals_geno$animal), animals_geno$animal)
 	message(sprintf(
 	  "found %i animals in common between geno and phenofile",
 	  dplyr::n_distinct(index_common_animals)
@@ -198,9 +198,10 @@ split_n_run <- function(run, runs, jobname, phenofile, pedigree){
 		  "#SBATCH --output=slurm/job%j.log",
 		  "/local/genome/packages/R/3.2.3/bin/Rscript \\
 		  /mnt/users/tikn/Projects/R-packages/asremlParallel/helpers/parallel_support_script.R $1 $2 $3 $4",
-		  file = sprintf("slurm/parallel_%s.sh", run_name), sep = "\n"
+		  file = sprintf("runfolder/%s/parallel_%s.sh", run_name, run_name), sep = "\n"
 	)
-	system(command = sprintf("sbatch slurm/parallel_%s.sh %s %s %s %s",run_name, run, jobname, phenofile, pedigree))
+	system(command = sprintf("sbatch runfolder/%s/parallel_%s.sh %s %s %s %s",
+	                         run_name, run_name, run_name, jobname, phenofile, pedigree))
 }
 
 split_n_run_multi <- function(run){
@@ -230,8 +231,8 @@ split_n_run_multi <- function(run){
 #' @param n_jobs N jobs to split the job over.
 #' @export
 job_setup <- function(snplist, n_jobs){
-  runs <- dplyr::data_frame(marker = snplist[2:length(snplist)])
-  runs <- dplyr::mutate(runs, run = paste("run", ntile(seq_along(marker), n_jobs), sep = "_"))
+  runs <- dplyr::data_frame(marker = snplist[1:length(snplist)])
+  runs <- dplyr::mutate(runs, run = paste("run", dplyr::ntile(seq_along(marker), n_jobs), sep = "_"))
   split(runs$marker, runs$run)
 }
 
