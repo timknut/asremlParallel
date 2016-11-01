@@ -117,7 +117,7 @@ for (i in 2:ncol(geno)) {
   system(sprintf("rm %s/%s.*", temp_folder, SNP)) # Uncomment to keep temp log-files
   if (i == 2) {
     timer_end <- proc.time() - timer_start
-    cat(paste0((timer_end[3] * length(names_snp))/60, " minutes estimated left."), sep = "\n")
+    cat(paste0((timer_end[3] * length(names_snp))/60, " estimated minutes  left."), sep = "\n")
   }
 }
 
