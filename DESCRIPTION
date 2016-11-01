@@ -8,7 +8,9 @@ Maintainer: Tim Knutsen <timknutsen@gmail.com>
 Description: More about what it does (maybe more than one line)
 License: GPL
 LazyData: TRUE
-Imports: dplyr,
+Imports:
+    dplyr,
     data.table,
     stringr,
     RLinuxModules
+RoxygenNote: 5.0.1
