@@ -15,7 +15,7 @@
 # animalID_2   0.2   1.1   1.8
 
 # Set parameters ----------------------------------------------------------
-n_jobs = 50
+n_jobs = 4
 phenotype = "C10"
 region <- "Chr13:65000000-65500000"
 
@@ -32,11 +32,12 @@ RLinuxModules::module("load slurm")
 # suppressPackageStartupMessages(require(data.table))
 # suppressPackageStartupMessages(require(stringr))
 suppressPackageStartupMessages(require(dplyr))
+library(data.table)
 
 # Divide region string
-chrom_r <- unlist(stringr::str_split(region, ":|-"))[1]
-start_r <- as.integer(unlist(stringr::str_split(region, ":|-"))[2])
-end_r <- as.integer(unlist(stringr::str_split(region, ":|-"))[3])
+chrom_r <- unlist(strsplit(region, ":|-"))[1]
+start_r <- as.integer(unlist(strsplit(region, ":|-"))[2])
+end_r <- as.integer(unlist(strsplit(region, ":|-"))[3])
 
 # Set directories
 old_workdir <- getwd()
@@ -49,11 +50,20 @@ pheno <- data.table::fread(phenofile)
 names(pheno)[1]<-"animal" ## Suboptimal
 
 # Read mapfile for genotypes ----------------------------------------------
-mapfile <- sprintf("~tikn/Projects/Fatty_acids_bovine/GWAS/new_GWAS_mars_2016/genotypes/seqimputed/vcf/final_seqimputed_merged/dosage_format/%s_map_info.txt", chrom_r)
-variant_map <- data.table::fread(mapfile, data.table = FALSE, verbose = FALSE)
-variant_map <- dplyr::mutate(variant_map, variant_id = paste(V1, V2,  V3, V4, sep = "_"))
+mapfile <-
+  sprintf(
+    "~tikn/Projects/Fatty_acids_bovine/GWAS/new_GWAS_mars_2016/genotypes/seqimputed/vcf/final_seqimputed_merged/dosage_format/%s_map_info.txt",
+    chrom_r
+  )
+variant_map <-
+  data.table::fread(mapfile, verbose = FALSE, data.table = FALSE)
+variant_map <-
+  mutate(variant_map, variant_id = paste(V1, V2,  V3, V4, sep = "_"))
+
+#variant_map <- dplyr::mutate(variant_map, variant_id = paste(V1, V2,  V3, V4, sep = "_"))
 
 # Set columns to read from geno-file from region.
+
 region_final <- dplyr::filter(variant_map, V2 >= start_r & V2 <= end_r & V1 == chrom_r)
 region_ids <- region_final$variant_id
 region_final <- c(1, which(variant_map$variant_id %in% region_final$variant_id) + 1)

@@ -8,7 +8,7 @@ require(readr)
 # Sett setwd() til dir med aktuell egenskap.
 
 chrom <- 13
-headers_mapfile <- c("CHR", "BP", "A1", "A2", "AR2_imputation")
+headers_mapfile <- c("CHR", "BP", "A1", "A2", "AR2_imputation", "freq")
 
 
 # Read mapfile
@@ -34,9 +34,9 @@ results <-
 # SNP,1512,46,0,0.777329752766979,-0.005467,0.01977,V2
 # SNP,120,72,0,0.583954417361325,-0.007406,0.01341,V3
 
-summary_results <-
-  plyr::ldply(results, function(x)
-    data.table::fread(x, data.table = FALSE))
+summary_results <-  plyr::ldply(results, function(x){
+  data.table::fread(x, data.table = FALSE)
+} )
 names(summary_results) <- c("type", "AA", "AB", "BB", "p", "effect", "se", "SNP")
 
 # Joining in map info. Check all the missing genotypes.
