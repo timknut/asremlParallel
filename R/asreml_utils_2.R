@@ -201,8 +201,11 @@ split_n_run <- function(run, runs, jobname, phenofile, pedigree){
 		  /mnt/users/tikn/Projects/R-packages/asremlParallel/helpers/parallel_support_script.R $1 $2 $3 $4",
 		  file = sprintf("runfolder/%s/parallel_%s.sh", run_name, run_name), sep = "\n"
 	)
-	system(command = sprintf("sbatch runfolder/%s/parallel_%s.sh %s %s %s %s",
-	                         run_name, run_name, run_name, jobname, phenofile, pedigree))
+	job_dir <- getwd()
+	setwd(sprintf("runfolder/%s/", run_name))
+	system(command = sprintf("sbatch parallel_%s.sh %s %s %s %s",
+	                         run_name, run_name, jobname, phenofile, pedigree))
+	setwd(job_dir)
 }
 
 split_n_run_multi <- function(run){

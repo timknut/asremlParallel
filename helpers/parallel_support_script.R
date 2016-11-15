@@ -6,7 +6,7 @@ suppressPackageStartupMessages(require(stringr, lib.loc = lib_loc))
 library(asremlParallel)
 Sys.unsetenv("DISPLAY")  # To prevent error when running interacively or via shell.
 work_dir <- getwd()
-
+cat("Working dir is: ", work_dir, "\n")
 # functions for processing the genotypes and ANOVA (Don't require changes)
 # source("~tikn/Projects/R-packages/asremlParallel/asreml_utils/asreml_utils_2.R") # not needed. Remove after tests.
 # source("~tikn/Projects/R-packages/asremlParallel/asreml_utils/parse_results_Tim.R") # same.
@@ -27,7 +27,7 @@ pedigree <- args[4]
 
 
 cat(run, "\n")
-genofile <- sprintf("runfolder/%s/%s_genos.txt", run, run)
+genofile <- sprintf("%s_genos.txt", run)
 geno <- data.table::fread(genofile, verbose = FALSE, data.table = FALSE)
 
 # READ PHENOTYPIC INFO
@@ -49,7 +49,8 @@ names_snp=names(geno)
 # Make tempfolder at /work
 #temp_folder <- tempdir()
 user <- system("whoami", intern = T)
-temp_folder <- paste0("/work/users/", user, "/", run)
+rundir <- basename(tempfile(pattern = "rundir"))
+temp_folder <- paste0("/work/users/", user, "/", rundir)
 system(paste0("mkdir -p ", temp_folder))
 stopifnot(file.exists(temp_folder))
 cat(sprintf("Using tempfolder: %s", temp_folder), "\n")
@@ -108,7 +109,7 @@ for (i in 2:ncol(geno)) {
       intern = T
     )
   # system(paste("/local/genome/packages/asreml/3.0.22.2-vb/bin/asreml ", as.file))
-  # cat(log_asreml, sep = "\n")
+   cat(log_asreml, sep = "\n")
   # End ---------------------------------------------------------------------
 
   # results  <- parse_results(data_loop, multicore = TRUE)
@@ -128,6 +129,6 @@ for (i in 2:ncol(geno)) {
     cat(paste0((timer_end[3] * length(names_snp))/60, " estimated minutes  left."), sep = "\n")
   }
 }
-
+cat(names(results), sep = "\t", file = "summary_results_headers.txt")
 # If you restart some anlysis, make sure that you delete the previous
 # summary_results file because it will keep writing the results in the same file

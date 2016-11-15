@@ -16,7 +16,7 @@
 # animalID_2   0.2   1.1   1.8
 
 # Set parameters ----------------------------------------------------------
-n_jobs = 4
+n_jobs = 5
 phenotype = "C10"
 region <- "Chr27:1-2000"
 
