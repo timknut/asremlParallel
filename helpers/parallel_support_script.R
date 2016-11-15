@@ -47,9 +47,12 @@ if(ncol(pheno) > 3){
 names_snp=names(geno)
 
 # Singel SNP loop ---------------------------------------------------------
-setwd(sprintf("runfolder/%s", run))
-temp_folder <- sprintf("temp_%s", run)
-if (!file.exists(temp_folder)) dir.create(temp_folder) # create runfolder
+# Make tempfolder at /work
+temp_folder <- tempdir()
+#setwd(sprintf("runfolder/%s", run))
+#setwd(run_dir)
+#temp_folder <- sprintf("temp_%s", run)
+#if (!file.exists(temp_folder)) dir.create(temp_folder) # create runfolder
 
 
 for (i in 2:ncol(geno)) {
@@ -58,19 +61,18 @@ for (i in 2:ncol(geno)) {
   SNP <- names_snp[i] # snp[i]
   marker_matrix <- select(geno, animal, SNP = i) # c(1,i)])
   data_loop <- dplyr::inner_join(pheno, marker_matrix, by = "animal")
+  data_loop_path <- sprintf('%s/data_loop.dat', temp_folder)
   readr::write_delim(
     data_loop,
-    path = sprintf('%s/data_loop.dat', temp_folder),
+    path = data_loop_path,
     col_names = TRUE, delim = " ", na = '-9'
   )
   pedline <- pedigree
-  dataline <-  sprintf("%s/runfolder/%s/%s/data_loop.dat",
-            work_dir, run, temp_folder)
+  dataline <-  data_loop_path
   stopifnot(file.exists(dataline))
-  # .as file
-  # need to be adjusted for your own model and parameters included in the as file
-  as.file <- paste(SNP, ".as", sep = "")
-  as.file <- sprintf("%s/%s", temp_folder, as.file)
+  # .as file need to be adjusted for your own model
+  # and parameters included in the as file
+  as.file <- paste(temp_folder,"/",SNP, ".as", sep = "")
   # fixed: sprintf("%s !SKIP1 !MAXIT 20 !MVINCLUDE !AISING !FCON !DDF", dataline),
   # random: !AISING !MAXIT 20 !EXTRA 10 !DDF
   cat(
@@ -90,7 +92,7 @@ for (i in 2:ncol(geno)) {
     file = as.file,
     sep = "\n"
   )
-
+  stopifnot(file.exists(as.file))
 
   # Uncomment to keep log. --------------------------------------------------
   log_asreml <-
@@ -106,7 +108,8 @@ for (i in 2:ncol(geno)) {
 
   # results  <- parse_results(data_loop, multicore = TRUE)
   # asr_file <- sprintf("%s/%s", temp_folder, SNP) # use when snp as random regression.
-  results <- parse_results_Tim(data_loop, multicore = TRUE)
+  results <- parse_results_Tim(data_loop, multicore = TRUE,
+                               tempfolder = temp_folder)
 
   readr::write_csv(
     results,

@@ -28,11 +28,12 @@ readANOVAASREML <- function(name)
 #' function for process the ANOVA in multi-core setting
 #' @param run integer. Run number.
 #' @param SNP Character. SNP identifier.
+#' @param tempfolder String. Path to tempfolder.
 #' @keywords GWAS
 #' @export
-readANOVAASREML_multicore <- function(run, SNP)
+readANOVAASREML_multicore <- function(run, SNP, tempfolder)
 {
-	ss <- readLines(sprintf("temp_%s/%s.asr",run, SNP))
+	ss <- readLines(sprintf("%s/%s.asr",tempfolder, SNP))
 	begin_ss <- grep(pattern = "Source of Variation",x = unlist(ss))
 	ss_1 <- ss[seq(begin_ss + 1,length(ss))]
 	end<- grep(pattern = "Notice:",x = unlist(ss_1))

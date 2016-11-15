@@ -1,10 +1,12 @@
 #' Process asreml results files
 #'
 #' MAKE A NICER OUTPUT and get number of individuals per genotype class
-#' @param x data_loop object.
+#' @param x data.frame data_loop object.
+#' @param multicore Locical.
+#' @param tempfolder string. Path to temp-folder
 #' @keywords asreml
 #' @export
-parse_results_Tim <-function(x, multicore = FALSE){
+parse_results_Tim <-function(x, multicore = FALSE, tempfolder){
 	mat <-NULL
 	mat1<-NULL
 	mat2<-NULL
@@ -29,7 +31,7 @@ parse_results_Tim <-function(x, multicore = FALSE){
 
 
 	ifelse (multicore == TRUE,
-			  ANOVA <- readANOVAASREML_multicore(run, SNP),
+			  ANOVA <- readANOVAASREML_multicore(run, SNP, tempfolder = tempfolder),
 			  ANOVA <- readANOVAASREML(name))
 
 	#ANOVA[1,2] <- "snp"
