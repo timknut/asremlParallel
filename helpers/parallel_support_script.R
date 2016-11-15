@@ -1,5 +1,5 @@
 # setup packages, data and functions ---------------------------------------------
-lib_loc <- "/mnt/users/tikn/R/x86_64-pc-linux-gnu-library/3.2"
+lib_loc <- "/mnt/users/tikn/R/x86_64-pc-linux-gnu-library/3.3"
 suppressPackageStartupMessages(require(data.table, lib.loc = lib_loc))
 suppressPackageStartupMessages(require(dplyr, lib.loc = lib_loc))
 suppressPackageStartupMessages(require(stringr, lib.loc = lib_loc))
@@ -38,7 +38,6 @@ names(pheno)[1]<-"animal"
 pheno <- semi_join(pheno, select(geno, 1), by = "animal" ) %>%
 	select(1,ends_with(phenotype), nobs)
 
-
 if(ncol(pheno) > 3){
   stop("more than 3 columns in phenofile")
 }
@@ -48,7 +47,12 @@ names_snp=names(geno)
 
 # Singel SNP loop ---------------------------------------------------------
 # Make tempfolder at /work
-temp_folder <- tempdir()
+#temp_folder <- tempdir()
+user <- system("whoami", intern = T)
+temp_folder <- paste0("/work/users/", user, "/", run)
+system(paste0("mkdir -p ", temp_folder))
+stopifnot(file.exists(temp_folder))
+cat(sprintf("Using tempfolder: %s", temp_folder), "\n")
 #setwd(sprintf("runfolder/%s", run))
 #setwd(run_dir)
 #temp_folder <- sprintf("temp_%s", run)
@@ -72,7 +76,7 @@ for (i in 2:ncol(geno)) {
   stopifnot(file.exists(dataline))
   # .as file need to be adjusted for your own model
   # and parameters included in the as file
-  as.file <- paste(temp_folder,"/",SNP, ".as", sep = "")
+  as.file <- paste0(temp_folder,"/",SNP, ".as")
   # fixed: sprintf("%s !SKIP1 !MAXIT 20 !MVINCLUDE !AISING !FCON !DDF", dataline),
   # random: !AISING !MAXIT 20 !EXTRA 10 !DDF
   cat(
@@ -103,12 +107,13 @@ for (i in 2:ncol(geno)) {
       ),
       intern = T
     )
- # system(paste("/local/genome/packages/asreml/3.0.22.2-vb/bin/asreml ", as.file))
+  # system(paste("/local/genome/packages/asreml/3.0.22.2-vb/bin/asreml ", as.file))
+  # cat(log_asreml, sep = "\n")
   # End ---------------------------------------------------------------------
 
   # results  <- parse_results(data_loop, multicore = TRUE)
   # asr_file <- sprintf("%s/%s", temp_folder, SNP) # use when snp as random regression.
-  results <- parse_results_Tim(data_loop, multicore = TRUE,
+  results <- parse_results_Tim(x = data_loop, multicore = TRUE,
                                tempfolder = temp_folder)
 
   readr::write_csv(
@@ -117,7 +122,7 @@ for (i in 2:ncol(geno)) {
     append = TRUE, col_names = FALSE
   )
   # cat(log_asreml, file = sprintf('%s.log', SNP), sep = '\n')  # uncomment to write separate logs for each variant.
-  system(sprintf("rm %s/%s.*", temp_folder, SNP)) # Uncomment to keep temp log-files
+  system(sprintf("rm -rf %s/%s.*", temp_folder, SNP))
   if (i == 2) {
     timer_end <- proc.time() - timer_start
     cat(paste0((timer_end[3] * length(names_snp))/60, " estimated minutes  left."), sep = "\n")

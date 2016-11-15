@@ -3,6 +3,7 @@
 #### NB!!! ####################################
 # Set working dir to analysis folder.         #
 # Script will create subdirectories           #
+# and uses tempdir() or ASreml analysis       #
 ###############################################
 
 ## phenofile format.
@@ -17,7 +18,7 @@
 # Set parameters ----------------------------------------------------------
 n_jobs = 4
 phenotype = "C10"
-region <- "Chr13:65000000-65500000"
+region <- "Chr27:1-2000"
 
 phenofile <- "~tikn/Projects/Fatty_acids_bovine/GWAS/asreml/Data/AM_dyd_20_obs.txt"
 pedigree <- "/mnt/users/tikn/Projects/R-packages/asremlParallel/data/testdata/pedigree/fa_20_daughters_Pedigree_asreml.txt.SRT"
