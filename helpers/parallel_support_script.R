@@ -1,10 +1,10 @@
 # setup packages, data and functions ---------------------------------------------
-lib_loc <- "/mnt/users/tikn/R/x86_64-pc-linux-gnu-library/3.3"
+lib_loc <- "/mnt/users/tikn/R/x86_64-pc-linux-gnu-library/3.3/"
 suppressPackageStartupMessages(require(data.table, lib.loc = lib_loc))
 suppressPackageStartupMessages(require(dplyr, lib.loc = lib_loc))
 suppressPackageStartupMessages(require(stringr, lib.loc = lib_loc))
 library(asremlParallel)
-Sys.unsetenv("DISPLAY")  # To prevent error when running interacively or via shell.
+if(interactive()) Sys.unsetenv("DISPLAY")  # To prevent error when running interacively or via shell.
 work_dir <- getwd()
 cat("Working dir is: ", work_dir, "\n")
 # functions for processing the genotypes and ANOVA (Don't require changes)
@@ -109,7 +109,7 @@ for (i in 2:ncol(geno)) {
       intern = T
     )
   # system(paste("/local/genome/packages/asreml/3.0.22.2-vb/bin/asreml ", as.file))
-   cat(log_asreml, sep = "\n")
+  # cat(log_asreml, sep = "\n")
   # End ---------------------------------------------------------------------
 
   # results  <- parse_results(data_loop, multicore = TRUE)
@@ -130,5 +130,6 @@ for (i in 2:ncol(geno)) {
   }
 }
 cat(names(results), sep = "\t", file = "summary_results_headers.txt")
+unlink(temp_folder, recursive = TRUE) # Delete temp folder-
 # If you restart some anlysis, make sure that you delete the previous
 # summary_results file because it will keep writing the results in the same file

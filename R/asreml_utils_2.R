@@ -196,7 +196,7 @@ split_n_run <- function(run, runs, jobname, phenofile, pedigree){
 		  "#SBATCH -n 1",
 		  "#SBATCH -N 1",
 		  sprintf("#SBATCH -J asreml_%i", run),
-		  "#SBATCH --output=slurm/job%j.log",
+		  sprintf("#SBATCH --output=%s/%s/slurm/job%%j.log", old_workdir, analysis_dir),
 		  "/local/genome/packages/R/3.2.3/bin/Rscript \\
 		  /mnt/users/tikn/Projects/R-packages/asremlParallel/helpers/parallel_support_script.R $1 $2 $3 $4",
 		  file = sprintf("runfolder/%s/parallel_%s.sh", run_name, run_name), sep = "\n"

@@ -7,7 +7,7 @@ require(readr)
 # Oppdater chrom til aktuelt kromosom.
 # Sett setwd() til dir med aktuell egenskap.
 
-chrom <- 13
+chrom <- 19
 headers_mapfile <- c("CHR", "BP", "A1", "A2", "AR2_imputation", "freq")
 
 
@@ -37,25 +37,34 @@ results <-
 summary_results <-  plyr::ldply(results, function(x){
   data.table::fread(x, data.table = FALSE)
 } )
-names(summary_results) <- c("type", "AA", "AB", "BB", "p", "effect", "se", "SNP")
+names(summary_results) <-
+  c("variant", "AA", "AB", "BB", "missing", "pval", "effect", "se")
 
 # Joining in map info. Check all the missing genotypes.
 
 summary_results_full <-
-  inner_join(summary_results, map_info, by = "SNP") %>%
-  tbl_df %>%
-  select(-1)
+  inner_join(summary_results, map_info, by = c("variant" = "SNP")) %>%
+  tbl_df
 rm(summary_results)
 
 # write GWAS file for IGV viewing ---------------------------------------------------------
+
 write_tsv(
   select(summary_results_full, p, SNP, CHR, BP) %>% arrange(BP),
-  path = sprintf("res_c08_chr%i.GWAS", chrom),
+  path = sprintf("res_chr%i.GWAS", chrom),
   col_names = T
 )
 
 
+# Write VCF for VEP upload ------------------------------------------------
+## Format: #CHROM POS ID REF ALT QUAL FILTER INFO
+write_vcf <- function(x){
+  dplyr::select(x, CHR, BP, variant, A1, A2) %>%
+    dplyr::mutate(qual = ".", filter = ".", info = ".") %>%
+    readr::write_tsv(sprintf("res_chr%i.vcf", chrom), col_names = F)
+}
 
+write_vcf(summary_results_full)
 
 
 
