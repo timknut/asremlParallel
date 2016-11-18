@@ -195,8 +195,15 @@ split_n_run <- function(run, runs, jobname, phenofile, pedigree){
 	cat ("#!/bin/sh",
 		  "#SBATCH -n 1",
 		  "#SBATCH -N 1",
+		  "#SBATCH -p cigene,hugemem",
+		  "#SBATCH --mem 5G",
 		  sprintf("#SBATCH -J asreml_%i", run),
 		  sprintf("#SBATCH --output=%s/%s/slurm/job%%j.log", old_workdir, analysis_dir),
+		  "unset R_HOME", # To prevent warning.
+		  'echo "Running on node: $SLURM_JOB_NODELIST"',
+		  'echo "Allocated memory: $SLURM_MEM_PER_NODE"',
+		  'echo "Jobname: $SLURM_JOB_NAME"',
+		  'echo "Partition: $SBATCH_PARTITION"',
 		  "/local/genome/packages/R/3.2.3/bin/Rscript \\
 		  /mnt/users/tikn/Projects/R-packages/asremlParallel/helpers/parallel_support_script.R $1 $2 $3 $4",
 		  file = sprintf("runfolder/%s/parallel_%s.sh", run_name, run_name), sep = "\n"

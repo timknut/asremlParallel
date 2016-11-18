@@ -15,9 +15,13 @@
 # animalID_1   0     1     2
 # animalID_2   0.2   1.1   1.8
 
+
+# For testing -------------------------------------------------------------
+setwd("~/Projects/R-packages/asremlParallel/tests")
+
 # Set parameters ----------------------------------------------------------
 n_jobs = 5
-phenotype = "C10"
+phenotype = "C04"
 region <- "Chr19:5000-10000"
 
 phenofile <- "~tikn/Projects/Fatty_acids_bovine/GWAS/asreml/Data/AM_dyd_20_obs.txt"

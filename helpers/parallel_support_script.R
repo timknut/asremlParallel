@@ -1,9 +1,9 @@
 # setup packages, data and functions ---------------------------------------------
 lib_loc <- "/mnt/users/tikn/R/x86_64-pc-linux-gnu-library/3.3/"
-suppressPackageStartupMessages(require(data.table, lib.loc = lib_loc))
-suppressPackageStartupMessages(require(dplyr, lib.loc = lib_loc))
-suppressPackageStartupMessages(require(stringr, lib.loc = lib_loc))
-library(asremlParallel)
+suppressWarnings(suppressPackageStartupMessages(require(data.table, lib.loc = lib_loc)))
+suppressWarnings(suppressPackageStartupMessages(require(dplyr, lib.loc = lib_loc)))
+suppressWarnings(suppressPackageStartupMessages(require(stringr, lib.loc = lib_loc)))
+suppressWarnings(library(asremlParallel))
 if(interactive()) Sys.unsetenv("DISPLAY")  # To prevent error when running interacively or via shell.
 work_dir <- getwd()
 cat("Working dir is: ", work_dir, "\n")
