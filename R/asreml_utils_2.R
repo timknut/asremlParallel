@@ -195,7 +195,7 @@ split_n_run <- function(run, runs, jobname, phenofile, pedigree){
 	cat ("#!/bin/sh",
 		  "#SBATCH -n 1",
 		  "#SBATCH -N 1",
-		  "#SBATCH --partiton=cigene,hugemem",
+		  "#SBATCH --partition cigene,hugemem",
 		  "#SBATCH --mem 5G",
 		  sprintf("#SBATCH -J asreml_%i", run),
 		  sprintf("#SBATCH --output=%s/%s/slurm/job%%j.log", old_workdir, analysis_dir),
