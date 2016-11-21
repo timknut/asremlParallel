@@ -15,19 +15,17 @@
 # animalID_1   0     1     2
 # animalID_2   0.2   1.1   1.8
 
-
 # For testing -------------------------------------------------------------
 setwd("~/Projects/R-packages/asremlParallel/tests")
 
 # Set parameters ----------------------------------------------------------
 n_jobs = 5
 phenotype = "C04"
-region <- "Chr19:5000-10000"
+region <- "Chr1:143000000-147000000"
 
 phenofile <- "~tikn/Projects/Fatty_acids_bovine/GWAS/asreml/Data/AM_dyd_20_obs.txt"
 pedigree <- "/mnt/users/tikn/Projects/R-packages/asremlParallel/data/testdata/pedigree/fa_20_daughters_Pedigree_asreml.txt.SRT"
 # No change required below ------------------------------------------------
-
 
 # setup packages, data and functions ---------------------------------------------
 library(asremlParallel)
