@@ -1,59 +1,92 @@
-## Run arseml in parallel for n number of jobs for a given jobname.
+## Run arseml in parallel over n number of jobs for a given phenotype and region.
 
 #### NB!!! ####################################
-# Set working dir to analysis folder          #
+# Set working dir to analysis folder.         #
+# Script will create subdirectories           #
+# and uses tempdir() or ASreml analysis       #
 ###############################################
 
-setwd("~/Projects/R-packages/asremlParallel/tests/")
-
 ## phenofile format.
-# animal  pheno1       pheno2        n_obs_1   n_obs_2
-# 1810    0.4201330846    593.5648206     3865    3865
-# 1893    0.1953620621    593.9099203     8320    8319
+# animal    nobs    dyd_*           dyd_*
+# 1810      3865    0.4201330846    593.5648206
+# 1893      8320    0.1953620621    593.9099203
+
+## genotype file format (no header)
+# animalID_1   0     1     2
+# animalID_2   0.2   1.1   1.8
+
+# For testing -------------------------------------------------------------
+setwd("~/Projects/R-packages/asremlParallel/tests")
 
 # Set parameters ----------------------------------------------------------
-n_jobs = 4
-jobname = "C14"
-phenofile <- "~tikn/Projects/R-packages/asremlParallel/data/testdata/AM_FA_dyd_asreml_20_daughters.txt"
-genofile <- "~tikn/Projects/R-packages/asremlParallel/data/testdata/fa_subset_final_march2016_updateids_updateparents_me_removed_tenperc_chr1_bp1_bp200000.raw" ## plink --recode A format
-pedigree <- "/mnt/users/tikn/Projects/R-packages/asremlParallel/data/testdata/pedigree/fa_20_daughters_Pedigree_asreml.txt.SRT"
-# delim = " "
+n_jobs = 5
+phenotype = "C04"
+#region <- "Chr1:143000000-147000000"
+region <- "Chr1:14-1470"
 
+phenofile <- "~tikn/Projects/Fatty_acids_bovine/GWAS/asreml/Data/AM_dyd_20_obs.txt"
+pedigree <- "/mnt/users/tikn/Projects/R-packages/asremlParallel/data/testdata/pedigree/fa_20_daughters_Pedigree_asreml.txt.SRT"
 # No change required below ------------------------------------------------
 
 # setup packages, data and functions ---------------------------------------------
-suppressPackageStartupMessages(require(plyr))
-suppressPackageStartupMessages(require(data.table))
-suppressPackageStartupMessages(require(stringr))
-suppressPackageStartupMessages(require(dplyr))
 library(asremlParallel)
-	require(RLinuxModules) # move these three lines main script.
-  moduleInit()
-  module("load slurm")
+RLinuxModules::moduleInit()
+RLinuxModules::module("load slurm")
+# suppressPackageStartupMessages(require(plyr))
+# suppressPackageStartupMessages(require(data.table))
+# suppressPackageStartupMessages(require(stringr))
+suppressPackageStartupMessages(require(dplyr))
+library(data.table)
 
-dir.create(jobname)
-dircheck(jobname)
+# Divide region string
+chrom_r <- unlist(strsplit(region, ":|-"))[1]
+start_r <- as.integer(unlist(strsplit(region, ":|-"))[2])
+end_r <- as.integer(unlist(strsplit(region, ":|-"))[3])
 
-
-
-# setwd(jobname) # Should not setwd!
+# Set directories
+old_workdir <- getwd()
+analysis_dir <-  paste(phenotype, chrom_r, start_r, end_r, sep = "_")
+dir.create(paste(phenotype, chrom_r, start_r, end_r, sep = "_"))
+setwd(sprintf("%s/%s/", old_workdir, analysis_dir))
 
 # # READ PHENOTYPIC INFO
 pheno <- data.table::fread(phenofile)
 names(pheno)[1]<-"animal" ## Suboptimal
 
-# READ GENOTYPIC INFO from plink --recode raw A file
-geno <- data.table::fread(genofile, data.table = F, verbose = FALSE)
-names(geno) <- str_replace(names(geno), "_.$", "") ## remove _C or _2 etc from snp name.
+# Read mapfile for genotypes ----------------------------------------------
+mapfile <-
+  sprintf(
+    "~tikn/Projects/Fatty_acids_bovine/GWAS/new_GWAS_mars_2016/genotypes/seqimputed/vcf/final_seqimputed_merged/dosage_format/%s_map_info.txt",
+    chrom_r
+  )
+variant_map <-
+  data.table::fread(mapfile, verbose = FALSE, data.table = FALSE)
+variant_map <-
+  mutate(variant_map, variant_id = paste(V1, V2,  V3, V4, sep = "_"))
+
+#variant_map <- dplyr::mutate(variant_map, variant_id = paste(V1, V2,  V3, V4, sep = "_"))
+
+# Set columns to read from geno-file from region.
+
+region_final <- dplyr::filter(variant_map, V2 >= start_r & V2 <= end_r & V1 == chrom_r)
+region_ids <- region_final$variant_id
+region_final <- c(1, which(variant_map$variant_id %in% region_final$variant_id) + 1)
+
+# READ GENOTYPIC INFO from dosage genoype format file.
+genofile <-
+  sprintf("~tikn/Projects/Fatty_acids_bovine/GWAS/new_GWAS_mars_2016/genotypes/seqimputed/vcf/final_seqimputed_merged/dosage_format/%s_finalseqimputemergedNRF_dosage.transposed.sampleID_merge.txt", chrom_r)
+geno <- read_genotypes(genofile, markers = region_final)
+names(geno) <- c("animal", region_ids)
 
 # format genotypes data frame
 geno <- subset_common(geno) ## Change to just use common animals geno/pheno, and report Diff like gcta
 
-# Get SNP names
-snp_names <- names(geno)
-
-# setup runs
-runs <- job_setup(snplist = snp_names, n_jobs = n_jobs)
+# setup jobs
+runs <- job_setup(snplist = region_ids, n_jobs = n_jobs)
 
 # Run jobs ---------------------------------------------------------------------
-plyr::l_ply(1:n_jobs, .fun = split_n_run, runs, jobname, phenofile, pedigree)
+plyr::l_ply(1:n_jobs, .fun = split_n_run, runs, phenotype, phenofile, pedigree)
+
+# return to old dir -------------------------------------------------------
+setwd(old_workdir)
+

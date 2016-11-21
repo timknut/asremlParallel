@@ -1,5 +1,7 @@
 # gather all results files and plot. --------------------------------------
 
+# WARNING! [1] "Wed Oct 19 13:05:13 2016"
+# Script needs to be updated.
 
 
 # calc explained var ------------------------------------------------------
@@ -14,7 +16,9 @@ mutate(summary_results,
 		 of_phenovar_explained = explained_eff/tot_var,
 		 of_genovar_explained = explained_eff/gen_var) %>% arrange(pval) %>% head
 
+# end ---------------------------------------------------------------------
 
+mapfile <- "/mnt/users/tikn/Projects/Fatty_acids_bovine/GWAS/new_GWAS_mars_2016/genotypes/seqimputed/vcf/final_seqimputed_merged/dosage_format/Chr13_map_info.txt"
 
 ## Make manhattan from parallel run.
 headers_bim <- c("CHR", "SNP", "cM", "BP", "A1", "A2")
@@ -22,7 +26,7 @@ headers_bim <- c("CHR", "SNP", "cM", "BP", "A1", "A2")
 bim <- read.delim("~tikn/dmu/DMU-data/plink-runs/777genos.bim", header=FALSE,
 									stringsAsFactors=FALSE, col.names = headers_bim) %>% select(-cM)
 bim <- filter(bim, CHR == 6)
-results <- list.files("runfolder", recursive = TRUE, pattern = "summary_results_run.*.csv",
+results <- list.files("runfolder", recursive = TRUE, pattern = "summary_results_.*.\\csv",
 							 full.names = TRUE)
 summary_results <- ldply(results, function(x) data.table::fread(x, data.table = FALSE))
 names(summary_results) <- c("AA", "AB", "BB", "LogL", "SNP")

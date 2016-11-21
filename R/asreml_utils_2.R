@@ -28,11 +28,12 @@ readANOVAASREML <- function(name)
 #' function for process the ANOVA in multi-core setting
 #' @param run integer. Run number.
 #' @param SNP Character. SNP identifier.
+#' @param tempfolder String. Path to tempfolder.
 #' @keywords GWAS
 #' @export
-readANOVAASREML_multicore <- function(run, SNP)
+readANOVAASREML_multicore <- function(run, SNP, tempfolder)
 {
-	ss <- readLines(sprintf("temp_%s/%s.asr",run, SNP))
+	ss <- readLines(sprintf("%s/%s.asr",tempfolder, SNP))
 	begin_ss <- grep(pattern = "Source of Variation",x = unlist(ss))
 	ss_1 <- ss[seq(begin_ss + 1,length(ss))]
 	end<- grep(pattern = "Notice:",x = unlist(ss_1))
@@ -122,17 +123,17 @@ parse_results <- function(x, multicore = FALSE){
 #' @export
 subset_common <- function(x, fraction = FALSE) {
 
-	animals_geno <- dplyr::select(x, 2)
+	animals_geno <- dplyr::select(x, 1)
 	## find common samples
 	index_common_animals <-
-	  match(intersect(pheno$animal, animals_geno$IID), animals_geno$IID)
+	  match(intersect(pheno$animal, animals_geno$animal), animals_geno$animal)
 	message(sprintf(
 	  "found %i animals in common between geno and phenofile",
 	  dplyr::n_distinct(index_common_animals)
 	))
 	## make genosubset with common animals. omit all but animal column
 	geno_subset <- x[index_common_animals,]
-	geno_subset <- dplyr::select(geno_subset, 2,7:ncol(x))
+	# geno_subset <- dplyr::select(geno_subset, 2,7:ncol(x)) # If plink raw is read, which is suboptimal.
 	if (fraction == TRUE){
 		rand_markers <- sample_frac(data_frame(markers = seq(2, ncol(geno_subset))), 0.1)
 		x <- select(geno_subset, 1, as.integer(rand_markers$markers))
@@ -179,7 +180,7 @@ split_n_run <- function(run, runs, jobname, phenofile, pedigree){
 #   moduleInit()
 #   module("load slurm")
   run_name  <- names(runs[run])
-	dir.create(sprintf("runfolder/%s", run_name))
+	dir.create(sprintf("runfolder/%s", run_name), recursive = TRUE)
 	snp_index <- match(runs[[run]], names(geno))
 	# subset markers for this run
 	geno_run <- dplyr::select(geno, 1, snp_index)
@@ -194,13 +195,25 @@ split_n_run <- function(run, runs, jobname, phenofile, pedigree){
 	cat ("#!/bin/sh",
 		  "#SBATCH -n 1",
 		  "#SBATCH -N 1",
+		  "#SBATCH --partition cigene,hugemem",
+		  "#SBATCH --mem 5G",
 		  sprintf("#SBATCH -J asreml_%i", run),
-		  "#SBATCH --output=slurm/job%j.log",
+		  sprintf("#SBATCH --output=%s/%s/slurm/job%%j.log", old_workdir, analysis_dir),
+		  "unset R_HOME", # To prevent warning.
+		  'echo "Running on node: $SLURM_JOB_NODELIST"',
+		  'echo "Allocated memory: $SLURM_MEM_PER_NODE"',
+		  'echo "Jobname: $SLURM_JOB_NAME"',
+		  'echo "Partition: $SBATCH_PARTITION"',
+		  'echo "jobID: $SLURM_JOB_ID"',
 		  "/local/genome/packages/R/3.2.3/bin/Rscript \\
 		  /mnt/users/tikn/Projects/R-packages/asremlParallel/helpers/parallel_support_script.R $1 $2 $3 $4",
-		  file = sprintf("slurm/parallel_%s.sh", run_name), sep = "\n"
+		  file = sprintf("runfolder/%s/parallel_%s.sh", run_name, run_name), sep = "\n"
 	)
-	system(command = sprintf("sbatch slurm/parallel_%s.sh %s %s %s %s",run_name, run, jobname, phenofile, pedigree))
+	job_dir <- getwd()
+	setwd(sprintf("runfolder/%s/", run_name))
+	system(command = sprintf("sbatch parallel_%s.sh %s %s %s %s",
+	                         run_name, run_name, jobname, phenofile, pedigree))
+	setwd(job_dir)
 }
 
 split_n_run_multi <- function(run){
@@ -230,9 +243,8 @@ split_n_run_multi <- function(run){
 #' @param n_jobs N jobs to split the job over.
 #' @export
 job_setup <- function(snplist, n_jobs){
-  dir.create("runfolder") ## conside making temp folder for this.
-  runs <- dplyr::data_frame(marker = snplist[2:length(snplist)])
-  runs <- dplyr::mutate(runs, run = paste("run", ntile(seq_along(marker), n_jobs), sep = "_"))
+  runs <- dplyr::data_frame(marker = snplist[1:length(snplist)])
+  runs <- dplyr::mutate(runs, run = paste("run", dplyr::ntile(seq_along(marker), n_jobs), sep = "_"))
   split(runs$marker, runs$run)
 }
 
@@ -248,3 +260,30 @@ dircheck <- function(jobname) {
   if(!grepl(jobname, dircheck) | is.null(dircheck)){
     stop("Did you check working directory?") }
 }
+
+#' Read specified markers into the geno object.
+#'
+#' @param x File name as character string.
+#' @param markers numeric vector of columns to keep.
+#' @export
+read_genotypes <- function(x, markers = NULL) {
+  if (is.null(markers)) {
+    data.table::fread(
+      x,
+      data.table = F,
+      verbose = FALSE,
+      colClasses = list(character = 1),
+      na.strings = "."
+    )
+  } else {
+    data.table::fread(
+      x,
+      data.table = F,
+      select =  markers,
+      verbose = FALSE,
+      colClasses = list(character = 1),
+      na.strings = "."
+    )
+  }
+}
+

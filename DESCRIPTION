@@ -1,10 +1,16 @@
 Package: asremlParallel
 Type: Package
 Title: R-wrapper for ASReml
-Version: 0.1.0
-Author: Tim Knutsen
-Maintainer: Who to complain to <yourfault@somewhere.net>
-Description: More about what it does (maybe more than one line)
-License: What license is it under?
+Version: 0.9.2
+Authors@R: person("Tim", "Knutsen", email = "timknutsen@gmail.com",
+  role = c("aut", "cre"))
+Maintainer: Tim Knutsen <timknutsen@gmail.com>
+Description: R wrapper for running ASreml GWAS in parallel in the CIGENE cluster environment.
+License: GPL
 LazyData: TRUE
-Imports: dplyr
+Imports:
+    dplyr,
+    data.table,
+    stringr,
+    RLinuxModules
+RoxygenNote: 5.0.1
