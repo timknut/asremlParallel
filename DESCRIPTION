@@ -1,7 +1,7 @@
 Package: asremlParallel
 Type: Package
 Title: R-wrapper for ASReml
-Version: 0.1.0
+Version: 0.9.1
 Authors@R: person("Tim", "Knutsen", email = "timknutsen@gmail.com",
   role = c("aut", "cre"))
 Maintainer: Tim Knutsen <timknutsen@gmail.com>
