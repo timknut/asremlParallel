@@ -5,7 +5,7 @@ Version: 0.9.1
 Authors@R: person("Tim", "Knutsen", email = "timknutsen@gmail.com",
   role = c("aut", "cre"))
 Maintainer: Tim Knutsen <timknutsen@gmail.com>
-Description: More about what it does (maybe more than one line)
+Description: R wrapper for running ASreml GWAS in parallel in the CIGENE cluster environment.
 License: GPL
 LazyData: TRUE
 Imports:
