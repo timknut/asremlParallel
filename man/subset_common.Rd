@@ -4,12 +4,14 @@
 \alias{subset_common}
 \title{Format genotypes data frame.}
 \usage{
-subset_common(x, fraction = FALSE)
+subset_common(x, fraction = FALSE, pheno)
 }
 \arguments{
 \item{x}{plink raw format data frame.}
 
-\item{fraction}{Locical. Will pick a random fraction of markes for
+\item{fraction}{Locical. Will pick a random fraction of markes for}
+
+\item{pheno}{data.table. data.table with phenotype data.
 testing if TRUE. Default [FALSE]}
 }
 \description{

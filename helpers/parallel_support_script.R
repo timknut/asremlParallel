@@ -109,7 +109,8 @@ for (i in 2:ncol(geno)) {
       intern = T
     )
   # system(paste("/local/genome/packages/asreml/3.0.22.2-vb/bin/asreml ", as.file))
-  cat(log_asreml, sep = "\n")
+  # cat(log_asreml, sep = "\n") # Uncomment to write ASreml logs to STDOUT
+  # cat(log_asreml, file = sprintf('%s.log', SNP), sep = '\n')  # uncomment to write separate logs for each variant.
   # End ---------------------------------------------------------------------
 
   # results  <- parse_results(data_loop, multicore = TRUE)
@@ -122,7 +123,6 @@ for (i in 2:ncol(geno)) {
     path = sprintf('summary_results_%s.csv', run),
     append = TRUE, col_names = FALSE
   )
-  # cat(log_asreml, file = sprintf('%s.log', SNP), sep = '\n')  # uncomment to write separate logs for each variant.
   system(sprintf("rm -rf %s/%s.*", temp_folder, SNP))
   if (i == 2) {
     timer_end <- proc.time() - timer_start

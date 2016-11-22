@@ -4,12 +4,14 @@
 \alias{readANOVAASREML_multicore}
 \title{Process asreml ANOVA output}
 \usage{
-readANOVAASREML_multicore(run, SNP)
+readANOVAASREML_multicore(run, SNP, tempfolder)
 }
 \arguments{
 \item{run}{integer. Run number.}
 
 \item{SNP}{Character. SNP identifier.}
+
+\item{tempfolder}{String. Path to tempfolder.}
 }
 \description{
 function for process the ANOVA in multi-core setting

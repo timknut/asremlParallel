@@ -4,10 +4,14 @@
 \alias{parse_results_Tim}
 \title{Process asreml results files}
 \usage{
-parse_results_Tim(x, multicore = FALSE)
+parse_results_Tim(x, multicore = FALSE, tempfolder)
 }
 \arguments{
-\item{x}{data_loop object.}
+\item{x}{data.frame data_loop object.}
+
+\item{multicore}{Locical.}
+
+\item{tempfolder}{string. Path to temp-folder}
 }
 \description{
 MAKE A NICER OUTPUT and get number of individuals per genotype class

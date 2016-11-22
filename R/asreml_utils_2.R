@@ -118,15 +118,18 @@ parse_results <- function(x, multicore = FALSE){
 #' Find common pheno/geno animals.
 #' @param x plink raw format data frame.
 #' @param fraction Locical. Will pick a random fraction of markes for
+#' @param pheno data.table. data.table with phenotype data.
 #' testing if TRUE. Default [FALSE]
 #' @keywords asreml gwas
 #' @export
-subset_common <- function(x, fraction = FALSE) {
+subset_common <- function(x, fraction = FALSE, pheno) {
 
-	animals_geno <- dplyr::select(x, 1)
 	## find common samples
 	index_common_animals <-
-	  match(intersect(pheno$animal, animals_geno$animal), animals_geno$animal)
+	  match(intersect(pheno[[1]], x[[1]]), x[[1]])
+	if(length(unique(index_common_animals)) <= 1) {
+	  stop("Found one or zero common animals between pheno- and genofile")
+	  }
 	message(sprintf(
 	  "found %i animals in common between geno and phenofile",
 	  dplyr::n_distinct(index_common_animals)
@@ -141,7 +144,7 @@ subset_common <- function(x, fraction = FALSE) {
 		x  <- geno_subset
 	}
 	## remove objects
-	rm(geno_subset, index_common_animals, animals_geno)
+	rm(geno_subset, index_common_animals)
 	## and clear memory..
 	gc()
 	return(x)
@@ -173,9 +176,11 @@ get_logL <- function(x){
 #' @param runs list Character list of SNPs to run.
 #' @param jobname string. Name of job
 #' @param phenofile string. Phenotype file
+#' @param geno data.frame. Genotype data.frame
+#' @param dirlist list. List of new and old dirs as arguments.
 #' @keywords asreml gwas
 #' @export
-split_n_run <- function(run, runs, jobname, phenofile, pedigree){
+split_n_run <- function(run, runs, jobname, phenofile, pedigree, geno, dirlist){
 # 	require(RLinuxModules) # move these three lines main script.
 #   moduleInit()
 #   module("load slurm")
@@ -189,6 +194,9 @@ split_n_run <- function(run, runs, jobname, phenofile, pedigree){
 	  path = sprintf("runfolder/%s/%s_genos.txt", run_name, run_name),
 	  col_names = TRUE
 	)
+
+	old_workdir <- dirlist$old
+	analysis_dir <- dirlist$new
 
 	if(!file.exists("slurm")) dir.create("slurm")
 	## Make script below to work
@@ -287,3 +295,31 @@ read_genotypes <- function(x, markers = NULL) {
   }
 }
 
+#' Read spesified region of ASreml genofile.
+#'
+#' @param variant_map data.frame Map data.frame.
+#' @param start_r integer. Start of region
+#' @param end_r integer. End of reion
+#' @param chrom_r string. Chromosome of region.
+#' @param genfile string. Path to genofile.
+#'
+#' @export
+#' @return data.frame
+read_region <-
+  function(variant_map,
+           start_r,
+           end_r,
+           chrom_r,
+           genofile) {
+    # READ GENOTYPIC INFO from dosage genoype format file.
+
+    region_final <-
+      dplyr::filter(variant_map, V2 >= start_r &
+                      V2 <= end_r & V1 == chrom_r)
+    region_ids <- region_final$variant_id
+    region_final <- c(1, which(variant_map$variant_id %in% region_final$variant_id) + 1)
+    stopifnot(file.exists(genofile))
+    geno <- asremlParallel::read_genotypes(genofile, markers = region_final)
+    names(geno) <- c("animal", region_ids)
+    return(list("genos" = geno, "markers" = region_ids))
+  }

@@ -4,7 +4,7 @@
 \alias{split_n_run}
 \title{split and run gwas files on cluster.}
 \usage{
-split_n_run(run, runs, jobname, phenofile, pedigree)
+split_n_run(run, runs, jobname, phenofile, pedigree, geno, dirlist)
 }
 \arguments{
 \item{run}{integer Run number.}
@@ -14,6 +14,10 @@ split_n_run(run, runs, jobname, phenofile, pedigree)
 \item{jobname}{string. Name of job}
 
 \item{phenofile}{string. Phenotype file}
+
+\item{geno}{data.frame. Genotype data.frame}
+
+\item{dirlist}{list. List of new and old dirs as arguments.}
 }
 \description{
 split and run gwas files on cluster.
