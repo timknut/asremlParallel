@@ -4,7 +4,7 @@ suppressWarnings(suppressPackageStartupMessages(require(data.table, lib.loc = li
 suppressWarnings(suppressPackageStartupMessages(require(dplyr, lib.loc = lib_loc)))
 suppressWarnings(suppressPackageStartupMessages(require(stringr, lib.loc = lib_loc)))
 suppressWarnings(library(asremlParallel))
-if(interactive()) Sys.unsetenv("DISPLAY")  # To prevent error when running interacively or via shell.
+Sys.unsetenv("DISPLAY")  # To prevent error when running interacively or via shell.
 work_dir <- getwd()
 cat("Working dir is: ", work_dir, "\n")
 # functions for processing the genotypes and ANOVA (Don't require changes)
@@ -109,7 +109,7 @@ for (i in 2:ncol(geno)) {
       intern = T
     )
   # system(paste("/local/genome/packages/asreml/3.0.22.2-vb/bin/asreml ", as.file))
-  # cat(log_asreml, sep = "\n")
+  cat(log_asreml, sep = "\n")
   # End ---------------------------------------------------------------------
 
   # results  <- parse_results(data_loop, multicore = TRUE)
