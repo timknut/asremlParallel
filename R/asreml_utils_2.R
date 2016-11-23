@@ -279,7 +279,7 @@ read_genotypes <- function(x, markers = NULL) {
     data.table::fread(
       x,
       data.table = F,
-      verbose = FALSE,
+      showProgress = FALSE,
       colClasses = list(character = 1),
       na.strings = "."
     )
@@ -288,7 +288,7 @@ read_genotypes <- function(x, markers = NULL) {
       x,
       data.table = F,
       select =  markers,
-      verbose = FALSE,
+      showProgress = FALSE,
       colClasses = list(character = 1),
       na.strings = "."
     )
@@ -318,6 +318,8 @@ read_region <-
                       V2 <= end_r & V1 == chrom_r)
     region_ids <- region_final$variant_id
     region_final <- c(1, which(variant_map$variant_id %in% region_final$variant_id) + 1)
+    message(sprintf("Reading genotypes.. \nWill analyse and split %i markers over %i jobs",
+                    length(region_final), n_jobs))
     stopifnot(file.exists(genofile))
     geno <- asremlParallel::read_genotypes(genofile, markers = region_final)
     names(geno) <- c("animal", region_ids)
