@@ -14,6 +14,6 @@ All dependency packages can be installed with `install.packages()` or use `devto
 
 ```R
 #install.packages("devtools")
-devtools::install_git(url = "https://github.com/timknut/asremlParallel", branch = "dev")
+devtools::install_git(url = "https://github.com/timknut/asremlParallel", branch = "master")
 ```
 Copy updated asreml_parallel.R from: `/mnt/users/tikn/Projects/R-packages/asremlParallel/asreml_parallel.R`
