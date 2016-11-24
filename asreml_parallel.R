@@ -109,15 +109,15 @@ run_asremlParallel <-
     variant_map <-
       mutate(variant_map, variant_id = paste(V1, V2,  V3, V4, sep = "_"))
 
-    system.time(
-      genolist <- read_region(
+
+      genolist <- asremlParallel::read_region(
         variant_map = variant_map,
         start_r = start_r,
         end_r = end_r,
         chrom_r = chrom_r,
         genofile = genofile
       )
-    )
+
 
     # format genotypes data frame
     geno <-
