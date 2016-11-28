@@ -18,11 +18,12 @@
 # animalID_2   0.2   1.1   1.8
 
 # For testing -------------------------------------------------------------
-setwd("~/Projects/R-packages/asremlParallel/tests")
+#setwd("~/Projects/R-packages/asremlParallel/tests")
+setwd("~/Projects/Fatty_acids_bovine/GWAS/asreml_parallel_forHG")
 
 # Set parameters ----------------------------------------------------------
 n_jobs = 5
-phenotype = "C04"
+phenotype = "C18"
 region <- "Chr1:14-200000"
 phenofile <-
   "/mnt/users/tikn/Projects/Fatty_acids_bovine/GWAS/asreml/Data/AM_dyd_20_obs.txt"
@@ -72,7 +73,7 @@ run_asremlParallel <-
     pheno <- data.table::fread(phenofile, showProgress = FALSE)
     names(pheno)[1] <- "animal" ## Suboptimal
     if(length(grep(
-      pattern = phenotype,
+      pattern = paste0(phenotype,"$"),
       x = names(pheno),
       ignore.case = TRUE
     )) != 1)
