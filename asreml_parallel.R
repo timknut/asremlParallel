@@ -19,12 +19,12 @@
 
 # For testing -------------------------------------------------------------
 #setwd("~/Projects/R-packages/asremlParallel/tests")
-setwd("~/Projects/Fatty_acids_bovine/GWAS/asreml_parallel_forHG")
+setwd("~/fettsyrepaper_2/fullsekvens_GWAS/")
 
 # Set parameters ----------------------------------------------------------
-n_jobs = 5
+n_jobs = 30
 phenotype = "C18"
-region <- "Chr1:14-200000"
+region <- "Chr1:120000000-150000000"
 phenofile <-
   "/mnt/users/tikn/Projects/Fatty_acids_bovine/GWAS/asreml/Data/AM_dyd_20_obs.txt"
 pedigree <-
@@ -79,7 +79,7 @@ run_asremlParallel <-
     )) != 1)
       stop("Did not find unique phenotype in phenofile"
       )
-    analysed_pheno <- names(pheno)[grep(pattern = phenotype, names(pheno), ignore.case = T)]
+    analysed_pheno <- names(pheno)[grep(pattern = paste0(phenotype,"$"), names(pheno), ignore.case = T)]
     message(sprintf('Will analyse phenotype "%s" from phenofile.', analysed_pheno))
     ## Set genofile path
     genofile <-
